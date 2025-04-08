@@ -45,4 +45,4 @@ Thumbs.db
 # Static/media
 staticfiles/
 media/
-static/
+# static/
