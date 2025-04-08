@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Event Timeline | EPICS 2025{% endblock %}
+{% load static %}
+
+{% block content %}
+<style>
+   
+    .timeline-wrapper {
+        padding:  20px;
+        
+    }
+
+    .timeline-container {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    .timeline-title {
+        text-align: center;
+        font-weight: 800;
+        font-size: 2.2rem;
+        margin-bottom: 40px;
+        color:black;
+    }
+
+    .timeline-table {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .timeline-table th {
+        background-color: #D5D7DA;
+        color: black;
+        text-align: center;
+        font-size: 1.05rem;
+        padding: 16px;
+    }
+
+    .timeline-table td {
+        text-align: center;
+        vertical-align: middle;
+        font-size: 1rem;
+        padding: 16px;
+    }
+
+    .timeline-table tbody tr:nth-child(odd) {
+        background-color: #f5faff;
+    }
+
+    .timeline-table tbody tr:hover {
+        background-color: #e9f2ff;
+        transition: 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="timeline-wrapper container-fluid">
+    <div class="timeline-container">
+        <h3 class="timeline-title">📅 Event Timeline – EPICS 2025</h3>
+        <div class="table-responsive timeline-table">
+            <table class="table table-bordered table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>S. No</th>
+                        <th>Activity</th>
+                        <th>Tentative Timeline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Gathering Problem Statements from Industries and Professors</td>
+                        <td>02nd April to 06th April 2025</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>EPICS Launch & Problem Statement Release</td>
+                        <td>09th April 2025</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Tech Know: Technology Literacy Initiative</td>
+                        <td>09th to 11th April 2025</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Ideathon</td>
+                        <td>15th April and 16th April 2025</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Product Building</td>
+                        <td>Till 12th June 2025</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>36 Hours Hackathon</td>
+                        <td>13th June & 14th June 2025</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

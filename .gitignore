@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg
+*.egg-info/
+*.log
+
+# Django migrations
+*/migrations/
+!*/migrations/__init__.py
+
+# SQLite (if used before)
+*.sqlite3
+
+# MySQL dumps
+*.sql
+
+# Environment
+.env
+*.env
+.env.*
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Byte-compiled
+*.pyc
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Static/media
+staticfiles/
+media/
+static/
