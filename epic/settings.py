@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-4j#u)$mvtxj#51mfo^isp_4my@fghjak@^=x(-uzivs^u&of9r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -77,9 +77,18 @@ WSGI_APPLICATION = 'epic.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+
+   'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'EPICS',
+        'USER': 'root',
+        'PASSWORD': 'KIT4compass!!!',
+        'HOST': 'localhost',
+        'PORT': '',
+        'OPTIONS': {
+        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+        
     }
 }
 
@@ -119,10 +128,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # URL to use when referring to static files located in STATICFILES_DIRS or collected in STATIC_ROOT.
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # This is where 'collectstatic' will copy static files
 
-# Directory where Django will search for additional static files
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# Remove STATICFILES_DIRS in production (if static files are managed via collectstatic)
+STATICFILES_DIRS = [BASE_DIR / "static"]  # COMMENT THIS IN PRODUCTION
+
+# Media files settings (uploaded by users)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -140,8 +154,3 @@ EMAIL_HOST_USER = 'skssoftwaretech@gmail.com' # Your email address
 EMAIL_HOST_PASSWORD = 'ytqz oulm saca xucm'      # 🔐 Use Gmail App Password (not your login password)
 
 
-# settings.py
-import os
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
