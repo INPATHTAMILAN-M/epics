@@ -445,12 +445,13 @@
         
     </div>
     <div class="stat-box">
-        <h2 style="text-align: center;color: black;">{{ software_count }}</h2>
+        <h2 style="text-align: center;color: black;">{{ total_submissions }}</h2>
         <p style="text-align: center;">Total Submit problem</p>
         
     </div>
 </div>
 <div class="table-container">
+    <form id="filterForm" method="get" action=".">
     <div class="mb-3 d-flex gap-3">
         <input type="text" id="problemFilter" class="form-control" placeholder="Search by Title..">
         <select id="themeFilter" class="form-select">
@@ -474,22 +475,26 @@
                 <th>Theme</th>
                 <th>Title</th>
                 <th>Category</th>
-                <th>Created By</th>
+                <th>Posted By</th>
                 <th>Action</th>
                 <th>Total submitted</th>
             </tr>
         </thead>
         <tbody id="problemTableBody">
             {% for problem in problems %}
-            <tr>
+            <tr data-bs-toggle="modal" data-bs-target="#problemModal"
+            data-Theme="{{ problem.theme.theme }}"
+            data-ProblemId="{{ problem.problem_id }}"
+            data-title="{{ problem.title }}"
+            data-description="{{ problem.description }}"
+            data-category="{{ problem.category }}"
+            data-posted-by="{{ problem.created_by }}">
                 <td>{{ forloop.counter }}</td>
                 <td>{{ problem.problem_id }}</td>
-                <td>{{ problem.theme.theme }}</td>
-                <td>{{ problem.title }}</td>
+              <td>{{ problem.theme.theme }}</td>
+                <td style="color:black; cursor: pointer;">{{ problem.title }}</td>
                 <td>{{ problem.category|title }}</td>
                 <td>{{ problem.created_by }}</td>
-                
-
                 <td>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#studentModal"
     data-problem-id="{{ problem.problem_id }}" data-problem-title="{{ problem.problem_id }}">
@@ -497,7 +502,7 @@
 </button>
 
                 </td>
-                <td>{{ problem.applications.count }}</td>
+                <td>0</td>
             </tr>
             {% empty %}
             <tr>
@@ -507,7 +512,49 @@
         </tbody>
     </table>
 </div>
+<div class="modal fade" id="problemModal" tabindex="-1" aria-labelledby="problemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="problemModalLabel">Problem Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Problem ID:</strong> <span id="modalProblemId"></span></p>
+                <p><strong>Theme:</strong> <span id="modalTheme"></span></p>
+                <p><strong>Title:</strong> <span id="modalTitle"></span></p>
+                <p><strong>Description:</strong></p>
+                <p id="modalDescription"></p>
+                <p><strong>Category:</strong> <span id="modalCategory"></span></p>
+                <p><strong>Posted By:</strong> <span id="modalPostedBy"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const problemModal = document.getElementById('problemModal');
 
+        problemModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+
+            const problemId = button.getAttribute('data-ProblemId');
+            const theme = button.getAttribute('data-theme');
+            const title = button.getAttribute('data-title');
+            const description = button.getAttribute('data-description');
+            const category = button.getAttribute('data-category');
+            const postedBy = button.getAttribute('data-posted-by');
+
+            document.getElementById('modalProblemId').textContent = problemId;
+            document.getElementById('modalTheme').textContent = theme;
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('modalCategory').textContent = category;
+            document.getElementById('modalPostedBy').textContent = postedBy;
+        });
+    });
+</script>
+    
 
 <script>
     document.getElementById('problemFilter').addEventListener('input', function () {

@@ -4,7 +4,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 import random
-
+from django.core.paginator import Paginator
+from django.db.models import Q
 from .forms import StudentInitialForm, StudentFileForm
 from .models import Student, Problem_statement
 # Temporary in-memory OTP store
@@ -52,16 +53,34 @@ def index(request):
                 else:
                     messages.error(request, 'Please use an email ending with @karpagamtech.ac.in.')
                   
-                
+    # 🔍 Filters from GET parameters
+    title_query = request.GET.get('title', '')
+    theme_query = request.GET.get('theme', '')
+    category_query = request.GET.get('category', '')
+
+    problems = Problem_statement.objects.select_related('theme', 'created_by')
+    if title_query:
+        problems = problems.filter(title__icontains=title_query)
+    if theme_query:
+        problems = problems.filter(theme_theme_iexact=theme_query)
+    if category_query:
+        problems = problems.filter(category__iexact=category_query)
+
+    # Pagination
+    paginator = Paginator(problems, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)            
     problems = Problem_statement.objects.select_related('theme', 'created_by')
     total_problems = Problem_statement.objects.count()
     hardware_count = Problem_statement.objects.filter(category='hardware').count()
     software_count = Problem_statement.objects.filter(category='software').count()
     themes = Problem_statement.objects.values_list('theme__theme', flat=True).distinct()
     categories = Problem_statement.objects.values_list('category', flat=True).distinct()
+    total_submissions = Student.objects.count()
    
 
     context = {
+        'total_submissions': total_submissions,
         'total_problems': total_problems,
         'hardware_count': hardware_count,
         'software_count': software_count,
@@ -70,6 +89,7 @@ def index(request):
         'file_form': StudentFileForm(),
         'themes': themes,
         'categories': categories,
+        
     }
     return render(request, 'index.html', context)
 
