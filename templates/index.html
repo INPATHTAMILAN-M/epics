@@ -420,14 +420,36 @@
                 display: block;
               }
               
-              
-              
+              .pagination {
+                    justify-content: center;
+                    margin-top: 20px;
+                }
+
+                .pagination .page-item {
+                    margin: 0 3px;
+                }
+
+                .pagination .page-link {
+                    border: 1px solid #dee2e6;
+                    color: #0d6efd;
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    transition: all 0.2s ease-in-out;
+                }
+
+                .pagination .page-link:hover {
+                    background-color: #e9ecef;
+                    color: #0a58ca;
+                    text-decoration: none;
+                }
+
+                .pagination .page-item.active .page-link {
+                    background-color: #0d6efd;
+                    border-color: #0d6efd;
+                    color: #fff;
+                    font-weight: bold;
+                }
           </style>
-
-
-     
-        
-      
 
 <div class="stats">
     <div class="stat-box">
@@ -452,22 +474,27 @@
 </div>
 <div class="table-container">
     <form id="filterForm" method="get" action=".">
-    <div class="mb-3 d-flex gap-3">
-        <input type="text" id="problemFilter" class="form-control" placeholder="Search by Title..">
-        <select id="themeFilter" class="form-select">
-            <option value="">Filter by Theme</option>
-            {% for theme in themes %}
-            <option value="{{ theme|lower }}">{{ theme|title }}</option>
-            {% endfor %}
-        </select>
-        <select id="categoryFilter" class="form-select">
-            <option value="">Filter by Category</option>
-            {% for category in categories %}
-            <option value="{{ category|lower }}">{{ category|title }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <table >
+        <div class="mb-3 d-flex gap-3">
+            <input type="text" name="title" class="form-control" placeholder="Search by Title.."
+                value="{{ title_query }}">
+    
+            <select name="theme" class="form-select">
+                <option value="">Filter by Theme</option>
+                {% for theme in themes %}
+                <option value="{{ theme|lower }}" {% if theme|lower == theme_query %}selected{% endif %}>{{ theme|title }}</option>
+                {% endfor %}
+            </select>
+    
+            <select name="category" class="form-select">
+                <option value="">Filter by Category</option>
+                {% for category in categories %}
+                <option value="{{ category|lower }}" {% if category|lower == category_query %}selected{% endif %}>{{ category|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <table>
         <thead style="background-color:#CBD3DC;">
             <tr>
                 <th>S.No</th>
@@ -475,42 +502,65 @@
                 <th>Theme</th>
                 <th>Title</th>
                 <th>Category</th>
-                <th>Posted By</th>
+                <th>Created By</th>
                 <th>Action</th>
                 <th>Total submitted</th>
             </tr>
         </thead>
         <tbody id="problemTableBody">
-            {% for problem in problems %}
-            <tr data-bs-toggle="modal" data-bs-target="#problemModal"
+            {% for problem in page_obj %}
+            <tr  data-bs-toggle="modal" data-bs-target="#problemModal"
             data-Theme="{{ problem.theme.theme }}"
             data-ProblemId="{{ problem.problem_id }}"
             data-title="{{ problem.title }}"
             data-description="{{ problem.description }}"
             data-category="{{ problem.category }}"
             data-posted-by="{{ problem.created_by }}">
-                <td>{{ forloop.counter }}</td>
+                <td>{{ forloop.counter0|add:page_obj.start_index|add:"0" }}</td>
                 <td>{{ problem.problem_id }}</td>
-              <td>{{ problem.theme.theme }}</td>
-                <td style="color:black; cursor: pointer;">{{ problem.title }}</td>
+                <td>{{ problem.theme.theme }}</td>
+                <td>{{ problem.title }}</td>
                 <td>{{ problem.category|title }}</td>
                 <td>{{ problem.created_by }}</td>
                 <td>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#studentModal"
-    data-problem-id="{{ problem.problem_id }}" data-problem-title="{{ problem.problem_id }}">
-    Apply
-</button>
-
+                        data-problem-id="{{ problem.problem_id }}" data-problem-title="{{ problem.problem_id }}">
+                        Apply
+                    </button>
                 </td>
                 <td>0</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6">No problem statements found.</td>
+                <td colspan="8">No problem statements found.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <div class="mt-3">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                  <li class="page-item">    
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if title_query %}&title={{ title_query }}{% endif %}{% if theme_query %}&theme={{ theme_query }}{% endif %}{% if category_query %}&category={{ category_query }}{% endif %}">Previous</a>
+                  </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                  <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% if title_query %}&title={{ title_query }}{% endif %}{% if theme_query %}&theme={{ theme_query }}{% endif %}{% if category_query %}&category={{ category_query }}{% endif %}">{{ num }}</a>
+                  </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if title_query %}&title={{ title_query }}{% endif %}{% if theme_query %}&theme={{ theme_query }}{% endif %}{% if category_query %}&category={{ category_query }}{% endif %}">Next</a>
+                  </li>
+                {% endif %}
+              </ul>
+        </nav>
+    </div>
 </div>
 <div class="modal fade" id="problemModal" tabindex="-1" aria-labelledby="problemModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -531,8 +581,9 @@
         </div>
     </div>
 </div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+     document.addEventListener('DOMContentLoaded', function () {
         const problemModal = document.getElementById('problemModal');
 
         problemModal.addEventListener('show.bs.modal', function (event) {
@@ -553,10 +604,36 @@
             document.getElementById('modalPostedBy').textContent = postedBy;
         });
     });
-</script>
-    
+    const filterForm = document.getElementById('filterForm');
 
-<script>
+    function applyFilters() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('page');  // reset to page 1
+
+        filterForm.querySelectorAll('input, select').forEach(input => {
+            if (input.name && input.value) {
+                url.searchParams.set(input.name, input.value);
+            } else {
+                url.searchParams.delete(input.name);
+            }
+        });
+
+        window.location.href = url.toString();
+    }
+
+    // Auto-submit on input change
+    filterForm.querySelectorAll('select').forEach(select => {
+        select.addEventListener('change', applyFilters);
+    });
+
+    filterForm.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', function () {
+            // Delay to reduce excessive reloads while typing
+            clearTimeout(input._filterTimeout);
+            input._filterTimeout = setTimeout(applyFilters, 500);
+        });
+    });
+    
     document.getElementById('problemFilter').addEventListener('input', function () {
         const filter = this.value.toLowerCase();
         const rows = document.querySelectorAll('#problemTableBody tr');

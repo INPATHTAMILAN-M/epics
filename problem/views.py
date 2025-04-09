@@ -11,7 +11,7 @@ from .models import Student, Problem_statement
 # Temporary in-memory OTP store
 otp_storage = {}
 def index(request):
-    form = StudentInitialForm()  # 🟢 Define here so it's always available
+    form = StudentInitialForm()  
 
     if request.method == 'POST':
         if 'team_details' in request.FILES or 'problem_solution' in request.FILES:
@@ -57,12 +57,11 @@ def index(request):
     title_query = request.GET.get('title', '')
     theme_query = request.GET.get('theme', '')
     category_query = request.GET.get('category', '')
-
     problems = Problem_statement.objects.select_related('theme', 'created_by')
     if title_query:
         problems = problems.filter(title__icontains=title_query)
     if theme_query:
-        problems = problems.filter(theme_theme_iexact=theme_query)
+        problems = problems.filter(theme__theme__iexact=theme_query)
     if category_query:
         problems = problems.filter(category__iexact=category_query)
 
@@ -70,7 +69,9 @@ def index(request):
     paginator = Paginator(problems, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)            
-    problems = Problem_statement.objects.select_related('theme', 'created_by')
+    
+  
+    #  Stats and extra data
     total_problems = Problem_statement.objects.count()
     hardware_count = Problem_statement.objects.filter(category='hardware').count()
     software_count = Problem_statement.objects.filter(category='software').count()
@@ -84,12 +85,15 @@ def index(request):
         'total_problems': total_problems,
         'hardware_count': hardware_count,
         'software_count': software_count,
-        'problems': problems,
         'form': form,
         'file_form': StudentFileForm(),
         'themes': themes,
         'categories': categories,
         
+        'page_obj': page_obj,  # Pass only paginated object
+        'title_query': title_query,
+        'theme_query': theme_query,
+        'category_query': category_query,
     }
     return render(request, 'index.html', context)
 
