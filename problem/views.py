@@ -66,7 +66,7 @@ def index(request):
         problems = problems.filter(category__iexact=category_query)
 
     # Pagination
-    paginator = Paginator(problems, 5)
+    paginator = Paginator(problems, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)            
     
