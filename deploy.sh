@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# # Pull the latest code changes from the repository
-# echo "Pulling latest changes from Git..."
-# git pull || { echo "Git pull failed. Exiting."; exit 1; }
+# Pull the latest code changes from the repository
+echo "Pulling latest changes from Git..."
+git pull || { echo "Git pull failed. Exiting."; exit 1; }
 
 # Restart the wwwgunicorn service
 echo "Restarting the epics service..."

@@ -21,7 +21,7 @@ class Faculty(models.Model):
 class Problem_statement(models.Model):
     theme= models.ForeignKey(Theme, on_delete=models.CASCADE)
     problem_id = models.CharField(unique=True, max_length=10)
-    title = models.CharField(max_length=225)
+    title = models.CharField(max_length=1500)
     description = models.TextField()
     category = models.CharField(
         choices=[

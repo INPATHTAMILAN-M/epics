@@ -8,10 +8,6 @@ __pycache__/
 *.egg-info/
 *.log
 
-# Django migrations
-*/migrations/
-!*/migrations/__init__.py
-
 # SQLite (if used before)
 *.sqlite3
 
