@@ -14,7 +14,7 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 
-
+from django.db.models import Count
 from django.core.mail import send_mail
 from django.http import JsonResponse
 import random
@@ -27,6 +27,10 @@ def index(request):
     theme_query = request.GET.get('theme', '')
     category_query = request.GET.get('category', '')
     problems = Problem_statement.objects.select_related('theme', 'created_by')
+    count = Problem_statement.objects.annotate(
+    submission_count=Count('student')
+)
+    
     if title_query:
         problems = problems.filter(title__icontains=title_query)
     if theme_query:
@@ -40,6 +44,7 @@ def index(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
+        'count': count,
         'form': form,
         'page_obj': page_obj,
         'title_query': title_query,

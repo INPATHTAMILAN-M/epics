@@ -530,7 +530,7 @@
                         Apply
                     </button>
                 </td>
-                <td>Update soon</td>
+                <td>{{ problem.submission_count }}</td>
             </tr>
             {% empty %}
             <tr>
@@ -551,7 +551,7 @@
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="studentModalLabel">Apply for {{ problem.problem_id }}</h5>
+              <h5 class="modal-title" id="studentModalLabel">Apply for problem</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="modalBodyContent">
@@ -819,7 +819,7 @@ function setupOtpLogic() {
         <div class="modal-content">
             <div class="modal-header">
                 
-                <h5 class="modal-title" id="studentModalLabel">Apply for: <span id="problemTitle"></span></h5>
+                <h5 class="modal-title" id="studentModalLabel">Apply for problem : <span id="problemTitle"></span></h5>
 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
