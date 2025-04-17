@@ -37,6 +37,8 @@ class Problem_statement(models.Model):
     
     
     
+
+
 class Student(models.Model):
     teamleader_name=models.CharField(max_length=225)
     department=models.CharField( choices=[
@@ -57,8 +59,7 @@ class Student(models.Model):
         ],max_length=20)
     
     problem_solution=models.FileField(upload_to='problem_solution/')
-    problem=models.ForeignKey(Problem_statement, on_delete=models.CASCADE)
+    # problem=models.ForeignKey(Problem_statement, on_delete=models.CASCADE)
     
     def __str__(self):
         return self.teamleader_name
-

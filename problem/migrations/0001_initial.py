@@ -41,17 +41,5 @@ class Migration(migrations.Migration):
                 ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='problem.faculty')),
                 ('theme', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='problem.theme')),
             ],
-        ),
-        migrations.CreateModel(
-            name='Student',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('teamleader_name', models.CharField(max_length=225)),
-                ('department', models.CharField(choices=[('AD&DS', 'AI&DS'), ('IT', 'IT'), ('CSE', 'CSE'), ('ECE', 'ECE'), ('EEE', 'EEE'), ('MECH', 'MECH')], max_length=20)),
-                ('email', models.EmailField(max_length=254)),
-                ('year', models.CharField(choices=[('1 year', '1 year'), ('2 year', '2 year'), ('3 year', '3 year'), ('4 year', '4 year')], max_length=20)),
-                ('problem_solution', models.FileField(upload_to='problem_solution/')),
-                ('problem', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='problem.problem_statement')),
-            ],
-        ),
+        )
     ]
