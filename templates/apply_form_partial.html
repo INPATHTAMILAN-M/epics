@@ -1,0 +1,77 @@
+<!-- apply_form_partial.html -->
+<h2 class="mb-3">Problem Id: {{ problem.problem_id }}</h2>
+
+<form
+  id="applicationForm"
+  method="post"
+  enctype="multipart/form-data"
+  action="{% url 'apply_problem' problem.id %}"
+  class="row g-3"
+>
+  {% csrf_token %}
+
+  <!-- Team Leader Name -->
+  <div class="col-md-6">
+    {{ form.teamleader_name.label_tag }}
+    {{ form.teamleader_name }}
+  </div>
+
+  <!-- Department -->
+  <div class="col-md-6">
+    {{ form.department.label_tag }}
+    {{ form.department }}
+  </div>
+
+  <!-- Email + Send OTP Below -->
+  <div class="col-md-6">
+    {{ form.email.label_tag }}
+    {{ form.email }}
+    <button
+      type="button"
+      class="btn btn-warning mt-2"
+      id="sendOtpBtn"
+    >
+      Send OTP
+    </button>
+  </div>
+
+  <!-- OTP Input -->
+  <div class="col-md-6" id="otpSection" style="display: none;">
+    <label for="otpInput" class="form-label">Enter OTP</label>
+    <input
+      type="text"
+      id="otpInput"
+      class="form-control"
+    >
+    <small
+      id="otpError"
+      class="text-danger"
+      style="display: none;"
+    >
+      Invalid OTP
+    </small>
+  </div>
+
+  <!-- Year -->
+  <div class="col-md-6">
+    {{ form.year.label_tag }}
+    {{ form.year }}
+  </div>
+
+  <!-- Solution File Upload -->
+  <div class="col-md-6">
+    {{ form.problem_solution.label_tag }}
+    {{ form.problem_solution }}
+  </div>
+
+  <!-- Submit Button -->
+  <div class="col-12 text-center mt-4">
+    <button
+      type="submit"
+      id="submitButton"
+      class="btn btn-success px-5"
+    >
+      Submit Application
+    </button>
+  </div>
+</form>

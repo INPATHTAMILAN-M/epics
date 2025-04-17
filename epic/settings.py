@@ -76,23 +76,28 @@ WSGI_APPLICATION = 'epic.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
+# DATABASES = {
 
-   'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'EPICS',
-        'USER': 'root',
-        'PASSWORD': 'KIT4compass!!!',
-        'HOST': 'localhost',
-        'PORT': '',
-        'OPTIONS': {
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+#    'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'EPICS',
+#         'USER': 'root',
+#         'PASSWORD': 'KIT4compass!!!',
+#         'HOST': 'localhost',
+#         'PORT': '',
+#         'OPTIONS': {
+#         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
         
+#     }
+# }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -142,7 +147,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+SESSION_ENGINE = 'django.contrib.sessions.backends.db' 
 # settings.py
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -57,6 +57,7 @@ class Student(models.Model):
         ],max_length=20)
     
     problem_solution=models.FileField(upload_to='problem_solution/')
+    problem=models.ForeignKey(Problem_statement, on_delete=models.CASCADE)
     
     def __str__(self):
         return self.teamleader_name

@@ -5,55 +5,24 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 import random
 from django.core.paginator import Paginator
-from django.db.models import Q
-from .forms import StudentInitialForm, StudentFileForm
+from .forms import StudentForm
 from .models import Student, Problem_statement
-# Temporary in-memory OTP store
-otp_storage = {}
+from django.shortcuts import get_object_or_404
+from django.conf import settings
+
+from django.template.loader import render_to_string
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, get_object_or_404
+
+
+from django.core.mail import send_mail
+from django.http import JsonResponse
+import random
+
 def index(request):
-    form = StudentInitialForm()  
+    form = StudentForm()
 
-    if request.method == 'POST':
-        if 'team_details' in request.FILES or 'problem_solution' in request.FILES:
-            form_file = StudentFileForm(request.POST, request.FILES)
-            if form_file.is_valid():
-                student_data = request.session.get('student_data')
-                if student_data:
-                    student = Student(
-                        teamleader_name=student_data['teamleader_name'],
-                        department=student_data['department'],
-                        email=student_data['email'],
-                        year=student_data['year'],
-                        problem_solution=form_file.cleaned_data['problem_solution'],
-                    )
-                    student.save()
-                    messages.success(request, 'Files submitted successfully!')
-                    return redirect('index')
-                else:
-                    messages.error(request, 'Session expired or invalid. Please fill the form again.')
-                    return redirect('index')
-        else:
-            form = StudentInitialForm(request.POST)
-            if form.is_valid():
-                email = form.cleaned_data['email']
-                if email.endswith('@karpagamtech.ac.in'):  # Ensure email ends with karpagamtech.ac.in
-                    otp = str(random.randint(100000, 999999))
-                    otp_storage[email] = otp
-
-                    send_mail(
-                        'Your OTP for EPICS Application',
-                        f'Hello {form.cleaned_data["teamleader_name"]}, your OTP is: {otp}',
-                        'noreply@example.com',
-                        [email],
-                        fail_silently=False,
-                    )
-
-                    request.session['student_data'] = form.cleaned_data
-                    messages.info(request, 'OTP sent to your email. Please verify to continue.')
-                else:
-                    messages.error(request, 'Please use an email ending with @karpagamtech.ac.in.')
-                  
-    # 🔍 Filters from GET parameters
+    # Filters
     title_query = request.GET.get('title', '')
     theme_query = request.GET.get('theme', '')
     category_query = request.GET.get('category', '')
@@ -68,59 +37,111 @@ def index(request):
     # Pagination
     paginator = Paginator(problems, 20)
     page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)            
-    
-  
-    #  Stats and extra data
-    total_problems = Problem_statement.objects.count()
-    hardware_count = Problem_statement.objects.filter(category='hardware').count()
-    software_count = Problem_statement.objects.filter(category='software').count()
-    themes = Problem_statement.objects.values_list('theme__theme', flat=True).distinct()
-    categories = Problem_statement.objects.values_list('category', flat=True).distinct()
-    total_submissions = Student.objects.count()
-   
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'total_submissions': total_submissions,
-        'total_problems': total_problems,
-        'hardware_count': hardware_count,
-        'software_count': software_count,
         'form': form,
-        'file_form': StudentFileForm(),
-        'themes': themes,
-        'categories': categories,
-        
-        'page_obj': page_obj,  # Pass only paginated object
+        'page_obj': page_obj,
         'title_query': title_query,
         'theme_query': theme_query,
         'category_query': category_query,
+        'themes': Problem_statement.objects.values_list('theme__theme', flat=True).distinct(),
+        'categories': Problem_statement.objects.values_list('category', flat=True).distinct(),
+        'total_problems': Problem_statement.objects.count(),
+        'hardware_count': Problem_statement.objects.filter(category='hardware').count(),
+        'software_count': Problem_statement.objects.filter(category='software').count(),
+        'total_submissions': Student.objects.count(),
     }
     return render(request, 'index.html', context)
 
 
+def apply_problem_view(request, problem_id):
+    problem = get_object_or_404(Problem_statement, pk=problem_id)
+    
+    form = StudentForm()
+
+    if request.method == 'POST':
+        print(problem)
+        form = StudentForm(request.POST, request.FILES)
+        
+        print("before if")
+        if form.is_valid():
+            print("Hii")
+            student = form.save(commit=False)
+            student.problem = problem  # Assign the problem to the student
+            student.save()
+            messages.success(request, "Application submitted successfully!")
+            return redirect('index')  # Redirect after successful submission
+        else:
+            print(form.errors)  # Print form errors for debugging
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render_to_string('apply_form_partial.html', {'form': form, 'problem': problem}, request)
+        return HttpResponse(html)
+
+    return render(request, 'apply_form_partial.html', {'form': form, 'problem': problem})
+
 
 @csrf_exempt
-def verify_otp(request):
+def send_otp_view(request):
     if request.method == 'POST':
+
+
         email = request.POST.get('email')
-        otp_entered = request.POST.get('otp')
 
-        if otp_storage.get(email) == otp_entered:
-            student_data = request.session.get('student_data')
-            if student_data:
-                # Save partial student record (without files yet)
-                student = Student(
-                    teamleader_name=student_data['teamleader_name'],
-                    department=student_data['department'],
-                    email=student_data['email'],
-                    year=student_data['year'],
-                )
-                student.save()
-                request.session['student_id'] = student.id  # track student ID for file upload
-                return JsonResponse({'success': True})
-        return JsonResponse({'success': False})
+        if '@karpagamtech.ac.in' not in email:
+            return JsonResponse({'success': False, 'message': 'Use college email to submit solution'}, status=400)
+        
+        teamleader_name = request.POST.get('teamleader_name')
+        if not email:
+            return JsonResponse({'success': False, 'message': 'Email is required'}, status=400)
+
+        otp = str(random.randint(100000, 999999))
+
+        
+
+        # Send email
+        subject = 'Your OTP for EPICS Application'
+        message = f'Hello {teamleader_name}, \n Your OTP is: {otp}'
+        from_email = 'skssoftwaretech@gmail.com'
+        recipient_list = [email]
+
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': 'Failed to send email', 'error': str(e)}, status=500)
+
+        return JsonResponse({'success': True, 'otp': otp})
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
 
 
+# @csrf_exempt
+# def verify_otp(request):
+#     if request.method == 'POST':
+#         entered_otp = request.POST.get('otp')
+#         saved_otp = request.session.get('otp')
+#         if entered_otp == saved_otp:
+#             request.session['otp_verified'] = True
+#             return JsonResponse({'status': 'success'})
+#         return JsonResponse({'status': 'fail'})
+#     return JsonResponse({'status': 'error'})
+
+# def submit_application(request):
+#     if request.method == 'POST':
+#         if request.session.get('otp_verified'):
+#             form = StudentForm(request.POST, request.FILES)
+#             if form.is_valid():
+#                 form.save()
+#                 messages.success(request, "Application submitted successfully!")
+#                 del request.session['otp']
+#                 del request.session['otp_verified']
+#                 return JsonResponse({'success': False, 'message': 'Use college email to submit solution'}, status=400)
+#                 return redirect('index')
+#             else:
+#                 messages.error(request, "Form invalid. Please check the fields.")
+#         else:
+#             messages.error(request, "OTP verification required before submitting.")
+#         return redirect('index')
 
 def guidelines(request):
     return render(request, 'guidelines.html')
@@ -130,13 +151,13 @@ def timeline(request):
 
 
 
-
 import openpyxl
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import ExcelUploadForm
 from .models import Problem_statement, Theme, Faculty
 from openpyxl import load_workbook
+from django.conf import settings
 
 def upload_excel(request):
     if request.method == 'POST' and request.FILES['excel_file']:

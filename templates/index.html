@@ -494,28 +494,28 @@
         </div>
     </form>
 
-    <table>
-        <thead style="background-color:#CBD3DC;">
+    <table class="table">
+        <thead>
             <tr>
-                <th>S.No</th>
+                <th>#</th>
                 <th>Problem ID</th>
                 <th>Theme</th>
                 <th>Title</th>
                 <th>Category</th>
-                <th>Created By</th>
-                <th>Action</th>
-                <th>Total submitted</th>
+                <th>Posted By</th>
+                <th>Apply</th>
+                <th>Submissions</th>
             </tr>
         </thead>
         <tbody id="problemTableBody">
             {% for problem in page_obj %}
-            <tr  data-bs-toggle="modal" data-bs-target="#problemModal"
-            data-Theme="{{ problem.theme.theme }}"
-            data-ProblemId="{{ problem.problem_id }}"
-            data-title="{{ problem.title }}"
-            data-description="{{ problem.description }}"
-            data-category="{{ problem.category }}"
-            data-posted-by="{{ problem.created_by }}">
+            <tr data-bs-toggle="modal" data-bs-target="#problemModal"
+                data-theme="{{ problem.theme.theme }}"
+                data-problemid="{{ problem.id }}"
+                data-title="{{ problem.title }}"
+                data-description="{{ problem.description }}"
+                data-category="{{ problem.category }}"
+                data-posted-by="{{ problem.created_by }}">
                 <td>{{ forloop.counter0|add:page_obj.start_index|add:"0" }}</td>
                 <td>{{ problem.problem_id }}</td>
                 <td>{{ problem.theme.theme }}</td>
@@ -523,12 +523,14 @@
                 <td>{{ problem.category|title }}</td>
                 <td>{{ problem.created_by }}</td>
                 <td>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#studentModal"
-                        data-problem-id="{{ problem.problem_id }}" data-problem-title="{{ problem.problem_id }}">
+                    <button type="button" class="btn btn-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#studentModal"
+                        data-url="{% url 'apply_problem' problem.id %}">
                         Apply
                     </button>
                 </td>
-                <td>0</td>
+                <td>Update soon</td>
             </tr>
             {% empty %}
             <tr>
@@ -537,7 +539,156 @@
             {% endfor %}
         </tbody>
     </table>
+    {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+    <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="studentModalLabel">Apply for {{ problem.problem_id }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalBodyContent">
+              <!-- Form will be loaded here -->
+              <div class="text-center">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const studentModal = document.getElementById('studentModal');
+        
+            studentModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const url = button.getAttribute('data-url');
+                const modalBody = document.getElementById('modalBodyContent');
+        
+                // Fetch the form from backend
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        modalBody.innerHTML = html;
+        
+                        // Re-bind the OTP JavaScript logic to the newly loaded form
+                        setupOtpLogic();
+                    });
+            });
+        });
+        </script>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+<script>
+function setupOtpLogic() {
+    const sendOtpBtn = document.getElementById('sendOtpBtn');
+    const otpSection = document.getElementById('otpSection');
+    const otpInput = document.getElementById('otpInput');
+    const otpError = document.getElementById('otpError');
+    const form = document.getElementById('applicationForm');
+    const submitButton = document.getElementById('submitButton');
+
+    let otpKey = "secretkey123";
+
+    function generateOTP() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    function sendOtpToEmail(email) {
+        fetch('/send-otp/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: new URLSearchParams({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const otp = data.otp;
+                const encryptedOtp = CryptoJS.AES.encrypt(otp, otpKey).toString();
+                localStorage.setItem("encryptedOTP", encryptedOtp);
+                alert("OTP sent successfully to your email.");
+                otpSection.style.display = 'block';
+            } else {
+                alert("Failed to send OTP: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error sending OTP:", error);
+            alert("Something went wrong while sending the OTP.");
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    sendOtpBtn?.addEventListener('click', function () {
+        const emailInput = document.getElementById("id_email");
+        const email = emailInput?.value;
+
+        if (!email) {
+            alert("Please enter your email first.");
+            return;
+        }
+
+        const otp = generateOTP();
+        const encryptedOtp = CryptoJS.AES.encrypt(otp, otpKey).toString();
+        localStorage.setItem("encryptedOTP", encryptedOtp);
+        sendOtpToEmail(email);
+        otpSection.style.display = 'block';
+    });
+
+    form?.addEventListener('submit', function (e) {
+        const encryptedOtp = localStorage.getItem("encryptedOTP");
+        const enteredOtp = otpInput?.value;
+
+        if (!encryptedOtp || !enteredOtp) {
+            e.preventDefault();
+            otpError.innerText = "OTP is required";
+            otpError.style.display = 'block';
+            return;
+        }
+
+        try {
+            const decryptedBytes = CryptoJS.AES.decrypt(encryptedOtp, otpKey);
+            const decryptedOtp = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
+            if (decryptedOtp !== enteredOtp) {
+                e.preventDefault();
+                otpError.innerText = "Invalid OTP";
+                otpError.style.display = 'block';
+            }
+        } catch (error) {
+            e.preventDefault();
+            otpError.innerText = "OTP decryption failed";
+            otpError.style.display = 'block';
+        }
+    });
+}
+</script>
+
+        
     <div class="mt-3">
         <nav aria-label="Page navigation">
             <ul class="pagination">
@@ -735,7 +886,7 @@
         const email = document.querySelector('input[name="email"]').value;
         const otp = document.getElementById('otpInput').value;
 
-        fetch("{% url 'verify_otp' %}", {
+        fetch("#", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -794,6 +945,7 @@
             </div>
         </div>
     </div>
+    
 </div>
 
 
