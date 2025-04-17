@@ -26,10 +26,10 @@ def index(request):
     title_query = request.GET.get('title', '')
     theme_query = request.GET.get('theme', '')
     category_query = request.GET.get('category', '')
-    problems = Problem_statement.objects.select_related('theme', 'created_by')
-    count = Problem_statement.objects.annotate(
-    submission_count=Count('student')
-)
+    problems = Problem_statement.objects.select_related('theme', 'created_by').annotate(
+        submission_count=Count('student')
+    )
+
     
     if title_query:
         problems = problems.filter(title__icontains=title_query)
@@ -44,7 +44,7 @@ def index(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'count': count,
+        
         'form': form,
         'page_obj': page_obj,
         'title_query': title_query,
