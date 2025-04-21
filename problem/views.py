@@ -210,3 +210,46 @@ def upload_excel(request):
     return render(request, 'upload.html', {'form': form})
 
 
+import openpyxl
+from django.http import HttpResponse
+from django.conf import settings
+from .models import Student
+
+def export_students_excel(request):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Epics Students apply details "
+
+    # Column headers
+    ws.append([
+        'Team Leader',
+        'Department',
+        'Email',
+        'Year',
+        'Problem Statement',
+        'Problem Solution URL'
+    ])
+
+    # Data rows
+    for student in Student.objects.all():
+        problem_solution_url = (
+            request.build_absolute_uri(student.problem_solution.url)
+            if student.problem_solution else ''
+        )
+        
+        ws.append([
+            student.teamleader_name,
+            student.department,
+            student.email,
+            student.year,
+            student.problem.title if student.problem else "",
+            problem_solution_url
+        ])
+
+    # Response
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename=students.xlsx'
+    wb.save(response)
+    return response
